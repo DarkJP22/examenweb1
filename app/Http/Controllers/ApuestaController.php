@@ -8,15 +8,27 @@ use Illuminate\Http\Request;
 
 class ApuestaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $apuestas = Apuesta::all();
-        $apuestas = Apuesta::with('juego')->get();
-        $apuestasConMasDeTresJugadores = Apuesta::whereHas('juego', function($query) {
+        
+        $apuestasConMasDeTresJugadores = Apuesta::whereHas('juego', function ($query) {
             $query->where('cantidad_jugadores', '<', 3);
         })->get();
-        
-        return view('apuestas.index', compact('apuestas', 'apuestasConMasDeTresJugadores'));
+
+        $juegos = Juego::all();
+
+        $juegoId = $request->input('juego_id');
+        if ($juegoId) {
+            $juego = Juego::findOrFail($juegoId);
+            $apuestas = Apuesta::where('id_juego', $juegoId)->get();
+        }
+
+        return view('apuestas.index', [
+            'apuestas' => $apuestas,
+            'apuestasConMasDeTresJugadores' => $apuestasConMasDeTresJugadores,
+            'juegos' => $juegos, 
+        ]);
     }
 
 
@@ -67,5 +79,20 @@ class ApuestaController extends Controller
     {
         $apuestas = Apuesta::where('id_juego', $id_juego)->get();
         return view('apuestas.index', compact('apuestas'));
+    }
+
+    public function search(Request $request)
+    {
+        $juego = $request->input('juego');
+
+        // Realizar la búsqueda en la base de datos
+        $apuestas = Apuesta::whereHas('juego', function ($query) use ($juego) {
+            $query->where('nombre', 'like', '%' . $juego . '%');
+        })->get();
+
+        return view('apuestas.index', [
+            'apuestas' => $apuestas,
+            // Pasa otras variables necesarias a la vista si es necesario
+        ]);
     }
 }

@@ -7,6 +7,19 @@
     <div class="card">
         <div class="card-body">
             <h1 class="card-title">Lista de Apuestas</h1>
+
+            <form action="{{ route('apuestas.index') }}" method="GET" class="mb-3">
+                <div class="input-group">
+                    <select name="juego_id" id="juego_id" class="form-select">
+                        <option value="">Seleccionar juego...</option>
+                        @foreach($juegos as $juego)
+                        <option value="{{ $juego->id }}" {{ request('juego_id') == $juego->id ? 'selected' : '' }}>{{ $juego->nombre }}</option>
+                        @endforeach
+                    </select>
+                    <button type="submit" class="btn btn-primary">Buscar</button>
+                </div>
+            </form>
+
             @if($apuestas->isEmpty())
                 <p>No hay apuestas disponibles.</p>
             @else
